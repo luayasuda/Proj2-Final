@@ -23,21 +23,27 @@ int valor;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-int transferencia( void *arg) { 
+struct transferencia_args {
+    conta* from;
+    conta* to;
+    int valor;
+};
+
+int transferencia( struct transferencia_args *arg) { 
     pthread_mutex_lock(&mutex);
-    if (from.saldo >= valor){
-        from.saldo -= valor; 
-        to.saldo += valor; 
+    if (arg->from->saldo >= arg->valor){
+        arg->from->saldo -= arg->valor; 
+        arg->to->saldo += arg->valor; 
     } else {
         printf("Transferência não foi concluída pois saldo de c1 é 0!\n"); 
-        printf("Saldo de c1: %d\n", from.saldo); 
-        printf("Saldo de c2: %d\n", to.saldo);
+        printf("Saldo de c1: %d\n", arg->from->saldo); 
+        printf("Saldo de c2: %d\n", arg->to->saldo);
         pthread_mutex_unlock(&mutex);
         return 0; 
     }
     printf("Transferência concluída com sucesso!\n"); 
-    printf("Saldo de c1: %d\n", from.saldo); 
-    printf("Saldo de c2: %d\n", to.saldo); 
+    printf("Saldo de c1: %d\n", arg->from->saldo); 
+    printf("Saldo de c2: %d\n", arg->to->saldo); 
     pthread_mutex_unlock(&mutex);
     return 0; 
 } 
@@ -55,8 +61,9 @@ int main() {
     to.saldo = 100; 
     printf( "Transferindo 10 para a conta c2\n" ); 
     valor = 10; 
-    for (i = 0; i < MAX_TRANSFERENCIAS ; i++) { 
-        pid = clone( &transferencia, (char*) stack + FIBER_STACK, SIGCHLD | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_VM, 0 ); 
+    for (i = 0; i < MAX_TRANSFERENCIAS; i++) { 
+        struct transferencia_args args = { &from, &to, valor };
+        pid = clone( (int ()(void *))transferencia, (char) stack + FIBER_STACK, SIGCHLD | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_VM, &args );
         if ( pid == -1 ) { 
             perror( "clone" ); 
             exit(2); 
