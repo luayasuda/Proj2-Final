@@ -11,6 +11,7 @@
 
 // 64kB stack 
 #define FIBER_STACK 1024*64 
+#define MAX_TRANSFERENCIAS 100
 
 struct c { 
     int saldo; 
@@ -54,7 +55,7 @@ int main() {
     to.saldo = 100; 
     printf( "Transferindo 10 para a conta c2\n" ); 
     valor = 10; 
-    for (i = 0; i < 101; i++) { 
+    for (i = 0; i < MAX_TRANSFERENCIAS ; i++) { 
         pid = clone( &transferencia, (char*) stack + FIBER_STACK, SIGCHLD | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_VM, 0 ); 
         if ( pid == -1 ) { 
             perror( "clone" ); 
@@ -65,5 +66,5 @@ int main() {
     } 
     free( stack ); 
     printf("Transferências concluídas e memória liberada.\n"); 
-  return 0;
+    return 0; 
 }
